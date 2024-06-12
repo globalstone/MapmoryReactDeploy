@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/MapmoryReactDeploy/static/css/main.e6c13ad2.css",
+    "main.js": "/MapmoryReactDeploy/static/js/main.06e142e6.js",
+    "static/js/453.e5b8d9ce.chunk.js": "/MapmoryReactDeploy/static/js/453.e5b8d9ce.chunk.js",
+    "index.html": "/MapmoryReactDeploy/index.html",
+    "main.e6c13ad2.css.map": "/MapmoryReactDeploy/static/css/main.e6c13ad2.css.map",
+    "main.06e142e6.js.map": "/MapmoryReactDeploy/static/js/main.06e142e6.js.map",
+    "453.e5b8d9ce.chunk.js.map": "/MapmoryReactDeploy/static/js/453.e5b8d9ce.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.06e142e6.js"
+  ]
+}
