@@ -1,22 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { IncomingCallModal } from './IncomingCallModal';
+import socketIO from 'socket.io-client';
 
 const useHandleIncomingCall = (callRequest, currentUserId) => {
     const [showModal, setShowModal] = useState(false);
     const [peerConnection, setPeerConnection] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
+
+    const socket = socketIO('https://your-signaling-server.com');
 
     useEffect(() => {
         const initPeerConnection = async () => {
             try {
                 const pc = new RTCPeerConnection();
                 setPeerConnection(pc);
+
+                pc.ontrack = (event) => {
+                    event.streams[0].getTracks().forEach((track) => {
+                        setRemoteStream((prevStream) => {
+                            const newStream = new MediaStream();
+                            prevStream?.getTracks().forEach((prevTrack) => {
+                                newStream.addTrack(prevTrack);
+                            });
+                            newStream.addTrack(track);
+                            return newStream;
+                        });
+                    });
+                };
+
+                socket.on('offer', async (data) => {
+                    if (data.toUser === currentUserId) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                        const answer = await pc.createAnswer();
+                        await pc.setLocalDescription(answer);
+                        socket.emit('answer', { toUser: data.fromUser, sdp: answer.sdp });
+                    }
+                });
+
+                socket.on('answer', async (data) => {
+                    if (data.toUser === currentUserId) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(data.sdp));
+                    }
+                });
             } catch (error) {
                 console.error('Error creating RTCPeerConnection:', error);
             }
         };
 
         initPeerConnection();
-    }, []);
+    }, [currentUserId, socket]);
 
     const acceptCall = async (callRequest) => {
         try {
@@ -24,10 +56,6 @@ const useHandleIncomingCall = (callRequest, currentUserId) => {
             localStream.getTracks().forEach((track) => {
                 peerConnection.addTrack(track, localStream);
             });
-
-            peerConnection.ontrack = (event) => {
-                // 원격 스트림 처리 로직 추가
-            };
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
@@ -37,7 +65,7 @@ const useHandleIncomingCall = (callRequest, currentUserId) => {
                 toUser: callRequest.fromUser,
                 sdp: offer.sdp,
             };
-            // SDP 오퍼 전송 로직 추가
+            socket.emit('offer', sdpOffer);
 
             setShowModal(false);
         } catch (error) {
@@ -60,6 +88,7 @@ const useHandleIncomingCall = (callRequest, currentUserId) => {
                     rejectCall={rejectCall}
                 />
             )}
+            {remoteStream && <video autoPlay src={URL.createObjectURL(remoteStream)} />}
         </div>
     );
 };
