@@ -7,4 +7,4 @@ FROM nginx:alpine
 COPY index.html favicon.ico robots.txt logo192.png logo512.png manifest.json asset-manifest.json static/ /usr/share/nginx/html/
 
 # Nginx 설정 파일 복사
-COPY nginx.conf /etc/nginx/nginx.conf
+#COPY nginx.conf /etc/nginx/nginx.conf
